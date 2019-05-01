@@ -1,4 +1,12 @@
 import Data.List (sortBy)
+{-module Utils
+(
+createClusters
+) where
+
+
+createClusters k pss
+-}
 --a entrada sempre vai estar correta?
 
 sortPoints :: (Ord a, Num a) => [[a]] -> [[a]]
@@ -18,3 +26,11 @@ euclideanDist (x:xs) (y:ys) = sqrt ((euclideanDist [x] [y]) + (euclideanDist xs 
 
 centroid :: (Floating a) => [[a]]->[a]
 centroid uss = map (\xs -> (sum xs) / fromIntegral(length xs)) uss
+
+moreDistOf :: (Ord t, Floating t) => [t] -> [[t]] -> [t] -> t -> [t]
+moreDistOf xs [] ms _ = ms
+moreDistOf xs (ys:yss) ms maxEucliDist
+        | eucliDist > maxEucliDist = moreDistOf xs yss ys eucliDist
+        | otherwise = moreDistOf xs yss ms maxEucliDist
+        where eucliDist = euclideanDist xs ys
+
