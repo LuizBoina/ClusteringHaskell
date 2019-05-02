@@ -5,10 +5,38 @@ kmeans
 ) where
 -}
 
-kmeans k pss = createClusters (iniClusters k pss [] 1) k pss
+--kmeans k pss = createClusters (iniKCenvalue k pss [] 1) k pss
 
-createClusters iniCls k pss
+--input: list of centroid of k groups, k, list of points and cluster
+--output: clusters (range 0 to k-1)
+createClusters :: (Enum a, Floating a, Ord a) => [[a]] -> [[a]] -> [[[a]]] -> [[[a]]]
+createClusters _ [] clsss = clsss
+createClusters kss (ps:pss) clsss = createClusters kss pss (addToCluster clsss (idxList (minDistOf ps kss [] 999999) kss) ps 0)
 
+--add element in the right space in the cluster 
+addToCluster :: (Eq a, Num a) => [[[a]]] -> a -> [a] -> a -> [[[a]]]
+addToCluster (clss:clsss) idx ps i
+                        | idx == i = (clss++[ps]):clsss
+                        | otherwise = clss:(addToCluster clsss idx ps (i+1))
+
+--return index of element in the list
+idxList :: (Enum a, Eq a1, Num a) => a1 -> [a1] -> a
+idxList ps pss = head [idx |(xs, idx) <- zip pss [0..] , ps == xs]
+
+--generate a list of empty lists
+initCluster :: (Enum t, Num t) => t -> [[t1]]
+initCluster k = [[]| a<-[1..k]]
+
+--input: Point, list of points, empty list and 0
+--output: less distant point in the list of points of Point
+minDistOf :: (Ord t, Floating t) => [t] -> [[t]] -> [t] -> t -> [t]
+minDistOf xs [] ms _ = ms
+minDistOf xs (ys:yss) ms minEucliDist
+        | eucliDist < minEucliDist = minDistOf xs yss ys eucliDist
+        | otherwise = minDistOf xs yss ms minEucliDist
+        where eucliDist = euclideanDist xs ys
+
+--sortPoints to simplify small sum
 sortPoints :: (Ord a, Num a) => [[a]] -> [[a]]
 sortPoints xss = sortBy comparePoints xss
                 where comparePoints xs ys
@@ -41,10 +69,13 @@ moreDistOf xs (ys:yss) ms maxEucliDist
         where eucliDist = euclideanDist xs ys
 
 --input: k, list of points, count = 1 and empty list of points
---output: count = k, list of inicials centroids
-iniClusters k pss kss count
-            | count == 1 = iniClusters k (tail pss) ((head pss):kss) (count+1)
+--output: count = k, list of k inicials centroids
+iniKCenValue :: (Eq a, Floating t, Num a, Ord t) => a -> [[t]] -> [[t]] -> a -> [[t]]
+iniKCenValue k pss kss count
+            | count == 1 = iniKCenValue k (tail pss) ((head pss):kss) (count+1)
             | count == k+1 = kss
-            | otherwise = iniClusters k (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss]) (count+1)
+            | otherwise = iniKCenValue k (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss]) (count+1)
             where pssLessPoint toRm pss = [ps | ps<-pss, ps /= toRm]
                   proxCluster pss kss = moreDistOf (centroid kss) pss [] 0
+
+recalKCenValue clss
