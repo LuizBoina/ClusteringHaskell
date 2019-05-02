@@ -16,3 +16,4 @@ getPoints = do fl <- openFile "entrada.txt" ReadMode
 
 --writeFile fileName =
     
+--funcao word

@@ -3,6 +3,6 @@ import Utils
 
 main = do k <- getK
         pss <- getPoints
-        createClusters k pss
-        putSSE 
-        writeFile "saida.txt"
+        clst <- kmeans k pss
+        sse <- sseCalculate clst pss 
+        -- escrever sse e pontos que pertencem a cada cluster
