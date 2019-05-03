@@ -12,8 +12,8 @@ calcSSE
 --input: k, list of points, limit and cluster
 --output: clss
 kmeans k pss limit clsss
-                | limit == 4 {-|| (clsss == (nextCluster pss clsss))-} = clsss
                 | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
+                | limit == 100 || clsss == (nextCluster pss clsss) = clsss
                 | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss)
                 where frstCluster k pss = createClusters (iniKCenValue k pss [] 1) pss (initCluster k)
                       nextCluster pss clsss = createClusters (recalKCenValue clsss) pss (initCluster k)
@@ -67,13 +67,16 @@ sortPoints xss = sortBy comparePoints xss
                                 | x > y = GT
                                 | otherwise = compareCoordinates xs ys
 
-euclideanDist :: (Floating a) => [a]->[a]->a
-euclideanDist [x] [y] = (x-y)**2
-euclideanDist (x:xs) (y:ys) = sqrt ((euclideanDist [x] [y]) + (euclideanDist xs ys))
-
 transpose:: [[a]]->[[a]]
 transpose ([]:_) = []
 transpose xss = (map head xss) : transpose (map tail xss)
+
+euclideanDist :: (Floating a) => [a]->[a]->a
+euclideanDist xs ys = sqrt (dist xs ys)
+              where dist (p:ps) (q:qs) = (q - p) ^ 2 + (dist ps qs)
+                    dist [] [] = 0
+
+
 
 centroid :: (Floating a) => [[a]]->[a]
 centroid uss = map (\xs -> (sum xs) / fromIntegral(length xs)) (transpose uss)
