@@ -12,11 +12,11 @@ calcSSE
 --input: k, list of points, limit and cluster
 --output: clss
 kmeans k pss limit clsss
-                | limit == 100 || (clsss == (nextCluster pss clsss)) = clsss
+                | limit == 4 {-|| (clsss == (nextCluster pss clsss))-} = clsss
                 | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
                 | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss)
-                where frstCluster k pss = (createClusters (iniKCenValue k pss [] 1) pss (initCluster k))
-                      nextCluster pss clsss = (createClusters (recalKCenValue clsss) pss clsss)
+                where frstCluster k pss = createClusters (iniKCenValue k pss [] 1) pss (initCluster k)
+                      nextCluster pss clsss = createClusters (recalKCenValue clsss) pss (initCluster k)
 
 --input: list of centroid of k groups, k, list of points and cluster
 --output: clusters (range 0 to k-1)
