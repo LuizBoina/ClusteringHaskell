@@ -1,17 +1,28 @@
 import Data.List (sortBy)
 {-module Utils
 (
-kmeans
+kmeans,
+initCluster,
+calcSSE
 ) where
 -}
 
---kmeans k pss = createClusters (iniKCenvalue k pss [] 1) k pss
+--calcSSE clss
+
+--input: k, list of points, limit and cluster
+--output: clss
+kmeans k pss limit clsss
+                | limit == 100 || (clsss == (nextCluster pss clsss)) = clsss
+                | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
+                | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss)
+                where frstCluster k pss = (createClusters (iniKCenValue k pss [] 1) pss (initCluster k))
+                      nextCluster pss clsss = (createClusters (recalKCenValue clsss) pss clsss)
 
 --input: list of centroid of k groups, k, list of points and cluster
 --output: clusters (range 0 to k-1)
 createClusters :: (Enum a, Floating a, Ord a) => [[a]] -> [[a]] -> [[[a]]] -> [[[a]]]
 createClusters _ [] clsss = clsss
-createClusters kss (ps:pss) clsss = createClusters kss pss (addToCluster clsss (idxList (minDistOf ps kss [] 999999) kss) ps 0)
+createClusters kss (ps:pss) clsss = createClusters kss pss (addToCluster clsss (idxList (minDistOf ps kss [] 9999999) kss) ps 0)
 
 --add element in the right space in the cluster 
 addToCluster :: (Eq a, Num a) => [[[a]]] -> a -> [a] -> a -> [[[a]]]
@@ -35,6 +46,14 @@ minDistOf xs (ys:yss) ms minEucliDist
         | eucliDist < minEucliDist = minDistOf xs yss ys eucliDist
         | otherwise = minDistOf xs yss ms minEucliDist
         where eucliDist = euclideanDist xs ys
+
+--input: list of list of points
+--output: k centroids recalculed
+recalKCenValue :: Floating a => [[[a]]] -> [[a]]
+recalKCenValue [] = []
+recalKCenValue (clss:clsss) = (centroid clss):(recalKCenValue clsss)
+
+--daq pra baixo testado e correto
 
 --sortPoints to simplify small sum
 sortPoints :: (Ord a, Num a) => [[a]] -> [[a]]
@@ -77,5 +96,3 @@ iniKCenValue k pss kss count
             | otherwise = iniKCenValue k (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss]) (count+1)
             where pssLessPoint toRm pss = [ps | ps<-pss, ps /= toRm]
                   proxCluster pss kss = moreDistOf (centroid kss) pss [] 0
-
-recalKCenValue clss
