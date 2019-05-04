@@ -1,19 +1,19 @@
-import System.IO
-{-(readFile,
-writeFile
+module IO
+( getK,
+ --getPoints
+ --ofSSECls
 ) where
--}
 
-getK = do x <- readFile "k.txt"
-          return x
+import System.IO
 
-getPoints = do fl <- openFile "entrada.txt" ReadMode
-               if hIsEOF fl then
-                hClose fl
-               else
-                ps <- 
-              
 
---writeFile fileName =
-    
---funcao word
+getK = do k <- readFile "k.txt"
+          return (read k :: Int)
+
+getPoints = do fl <- readFile "entrada.txt"
+               return (toListOfPoints fl [])
+               where toListOfPoints fl pss
+                           | length fl == 0 = pss
+                           | otherwise = toListOfPoints (tail (dropWhile (/='\n') fl)) (pss++[toPoint fl])
+                           where toPoint fl = (map (\x -> read x :: Float) (words (takeWhile (/='\n') fl)))
+     

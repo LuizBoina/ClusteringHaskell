@@ -1,11 +1,11 @@
-import Data.List (sortBy)
-{-module Utils
-(
-kmeans,
+module Utils
+( kmeans,
+sortPoints,
 initCluster,
-calcSSE
+--calcSSE
 ) where
--}
+
+import Data.List (sortBy)
 
 --calcSSE clss
 
