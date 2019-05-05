@@ -2,12 +2,17 @@ module Utils
 ( kmeans,
 sortPoints,
 initCluster,
---calcSSE
+calcSSE,
 ) where
 
 import Data.List (sortBy)
 
---calcSSE clss
+
+calcSSE [] = 0
+calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
+                       where sseGroup [] _ = 0
+                             sseGroup (cls:clss) centroidClss = (euclideanDist cls centroidClss)**2 + sseGroup clss centroidClss
+                             
 
 --input: k, list of points, limit and cluster
 --output: clss
@@ -73,7 +78,7 @@ transpose xss = (map head xss) : transpose (map tail xss)
 
 euclideanDist :: (Floating a) => [a]->[a]->a
 euclideanDist xs ys = sqrt (dist xs ys)
-              where dist (p:ps) (q:qs) = (q - p) ^ 2 + (dist ps qs)
+              where dist (p:ps) (q:qs) = (q - p)**2 + (dist ps qs)
                     dist [] [] = 0
 
 
