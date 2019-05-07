@@ -57,7 +57,6 @@ recalKCenValue :: Floating a => [[[a]]] -> [[a]]
 recalKCenValue [] = []
 recalKCenValue (clss:clsss) = (centroid clss):(recalKCenValue clsss)
 
---daq pra baixo testado e correto
 
 --sortPoints to simplify small sum
 sortPoints :: (Ord a, Num a) => [[a]] -> [[a]]
