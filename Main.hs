@@ -7,4 +7,4 @@ main = do k <- getK
           print pss
           sse <- calcSSE clst
           writeSse sse
-          --writeClusters clst pss
+          writeClts clst pss

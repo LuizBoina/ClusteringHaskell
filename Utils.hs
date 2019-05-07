@@ -7,6 +7,7 @@ calcSSE,
 
 import Data.List (sortBy)
 
+calcSSE :: Floating p => [[[p]]] -> p
 calcSSE [] = 0
 calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
                        where sseGroup [] _ = 0
@@ -15,6 +16,7 @@ calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
 
 --input: k, list of points, limit and cluster
 --output: clss
+kmeans :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
 kmeans k pss limit clsss
                 | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
                 | limit == 100 || clsss == (nextCluster pss clsss k) = clsss

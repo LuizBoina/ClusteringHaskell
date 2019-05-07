@@ -2,7 +2,7 @@ module IO
 ( getK,
 getPoints,
 writeSse,
-writeClusters
+writeClts
 ) where
 
 import System.IO
@@ -25,11 +25,19 @@ getPoints = do fl <- readFile "entrada.txt"
                            | otherwise = [toPoint fl] ++ (toListOfPoints (tail $ dropWhile (/='\n') fl))
                            where toPoint fl = map (\x -> readFloat x) (words $ takeWhile (/='\n') fl)
 
+writeSse :: PrintfArg t => t -> IO ()
 writeSse sse = writeFile "result.txt" (printf "%.4f" sse)
 
+writeClts :: Eq a => [[[a]]] -> [[a]] -> IO ()
 writeClts clsss pss = writeFile "saida.txt" (formatClts clsss pss)
 
+formatClts :: Eq a => [[[a]]] -> [[a]] -> [Char]
 formatClts [] _ = ""
-formatClts (clss:clsss) pss = [formatGroup clss pss]++(formatClts clsss pss)
+formatClts (clss:clsss) pss = formatGroup clss pss++(formatClts clsss pss)
 
-formatGroup (cls:clss) (ps:pss) =
+formatGroup :: Eq a => [[a]] -> [[a]] -> [Char]
+formatGroup clss pss = map replaceChar $ tail $ show [idx | cls<-clss, (idx,ps)<-zip [1..] pss , cls == ps]
+                       where replaceChar c
+                                    | c == ',' = ' '
+                                    | c == ']' = '\n'
+                                    | otherwise = c
