@@ -1,12 +1,13 @@
 module IO
-( getK,
-getPoints,
-writeSse,
-writeClts
+(getPoints,
+writeSSE,
+writeClts,
+kmeansIO
 ) where
 
 import System.IO
 import Text.Printf
+import Utils
 
 readInt :: String -> Int
 readInt = read
@@ -14,10 +15,11 @@ readInt = read
 readFloat :: String -> Float
 readFloat = read
 
+getK :: IO Int
 getK = do k <- readFile "k.txt"
           return $ readInt k
 
-
+getPoints :: IO [[Float]]
 getPoints = do fl <- readFile "entrada.txt"
                return $ toListOfPoints fl
                where toListOfPoints fl
@@ -25,8 +27,8 @@ getPoints = do fl <- readFile "entrada.txt"
                            | otherwise = [toPoint fl] ++ (toListOfPoints (tail $ dropWhile (/='\n') fl))
                            where toPoint fl = map (\x -> readFloat x) (words $ takeWhile (/='\n') fl)
 
-writeSse :: PrintfArg t => t -> IO ()
-writeSse sse = writeFile "result.txt" (printf "%.4f" sse)
+writeSSE :: (PrintfArg t, Floating t) => [[[t]]] -> IO ()
+writeSSE clsss = writeFile "result.txt" (printf "%.4f" (calcSSE clsss))
 
 writeClts :: Eq a => [[[a]]] -> [[a]] -> IO ()
 writeClts clsss pss = writeFile "saida.txt" (formatClts clsss pss)
@@ -41,3 +43,8 @@ formatGroup clss pss = map replaceChar $ tail $ show [idx | cls<-clss, (idx,ps)<
                                     | c == ',' = ' '
                                     | c == ']' = '\n'
                                     | otherwise = c
+
+kmeansIO :: IO [[[Float]]]
+kmeansIO = do k <- getK
+              pss <- getPoints
+              return $ kmeans k pss 1 (initCluster k)

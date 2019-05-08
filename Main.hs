@@ -1,10 +1,6 @@
 import IO
-import Utils
 
-main = do k <- getK
+main = do clst <- kmeansIO
           pss <- getPoints
-          clst <- kmeans k pss 1 (initCluster k)
-          print pss
-          sse <- calcSSE clst
-          writeSse sse
+          writeSSE clst
           writeClts clst pss

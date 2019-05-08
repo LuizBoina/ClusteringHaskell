@@ -1,6 +1,5 @@
 module Utils
 ( kmeans,
-sortPoints,
 initCluster,
 calcSSE,
 ) where
