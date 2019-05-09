@@ -20,7 +20,7 @@ kmeans k pss limit clsss
                 | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
                 | limit == 100 || clsss == (nextCluster pss clsss k) = clsss
                 | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss k)
-                where frstCluster k pss = createClusters (sortPoints $ iniKCenValue k pss [] 1) pss (initCluster k)
+                where frstCluster k pss = createClusters (iniKCenValue k (sortPoints pss) [] 1) pss (initCluster k)
                       nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
 
 --input: list of centroid of k groups, k, list of points and cluster
