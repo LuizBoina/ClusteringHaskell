@@ -13,7 +13,7 @@ calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
                              sseGroup (cls:clss) centroidClss = (euclideanDist cls centroidClss)**2 + sseGroup clss centroidClss
                              
 --primeira iteracao ja ocorre na chamada da funcao
-kmeans k pss = createClusters $ centroidCalculate k pss 2 (createClusters (firstKCentroids k (sortPoints pss)) initCluster k) 
+--kmeans k pss = createClusters $ centroidCalculate k pss 2 (createClusters (firstKCentroids k (sortPoints pss)) initCluster k) 
 
 
 --input: k, list of points, limit and cluster
