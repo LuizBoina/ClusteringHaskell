@@ -87,19 +87,18 @@ centroid uss = map (\xs -> (sum xs) / fromIntegral(length xs)) (transpose uss)
 
 --input: Point, list of points, empty list and 0
 --output: more distant point in the list of points of Point
-moreDistOf :: (Ord t, Floating t) => [t] -> [[t]] -> [t] -> t -> [t]
-moreDistOf xs [] ms _ = ms
-moreDistOf xs (ys:yss) ms maxEucliDist
-        | eucliDist > maxEucliDist = moreDistOf xs yss ys eucliDist
-        | otherwise = moreDistOf xs yss ms maxEucliDist
-        where eucliDist = euclideanDist xs ys
+moreDistOf :: (Floating a, Ord a) => [a] -> [[a]] -> [a]
+moreDistOf xs [ys] = ys
+moreDistOf xs (ys:yss)
+        | (euclideanDist xs ys) > euclideanDist xs (moreDistOf xs yss) = ys
+        | otherwise = (moreDistOf xs yss)
 
---input: k, list of points, count = 1 and empty list of points
---output: count = k, list of k inicials centroids
-iniKCenValue :: (Eq a, Floating t, Num a, Ord t) => a -> [[t]] -> [[t]] -> a -> [[t]]
-iniKCenValue k pss kss count
-            | count == 1 = iniKCenValue k (tail pss) ((head pss):kss) (count+1)
-            | count == k+1 = kss
-            | otherwise = iniKCenValue k (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss]) (count+1)
+firstKCentroids :: (Eq a, Floating a1, Num a, Ord a1) => a -> [[a1]] -> [[a1]]
+firstKCentroids k pss = (restOfFirstKCentroids (k-1) (tail pss) [(head pss)])
+
+restOfFirstKCentroids :: (Eq a, Floating a1, Num a, Ord a1) => a -> [[a1]] -> [[a1]] -> [[a1]]
+restOfFirstKCentroids k pss kss
+            | k == 0 = kss
+            | otherwise = restOfFirstKCentroids (k-1) (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss])
             where pssLessPoint toRm pss = [ps | ps<-pss, ps /= toRm]
-                  proxCluster pss kss = moreDistOf (centroid kss) pss [] 0
+                  proxCluster pss kss = moreDistOf (centroid kss) pss
