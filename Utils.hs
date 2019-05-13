@@ -13,15 +13,18 @@ calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
                              sseGroup (cls:clss) centroidClss = (euclideanDist cls centroidClss)**2 + sseGroup clss centroidClss
                              
 
+--primeira iteracao ja ocorre na chamada da funcao
+kmeans k pss = recalculateGroups k pss 2 (createClusters (firstKCentroids k (sortPoints pss)) pss (initCluster k)) 
+
+
 --input: k, list of points, limit and cluster
 --output: clss
-kmeans :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
-kmeans k pss limit clsss
-                | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
+--recalculateGroups :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
+recalculateGroups k pss limit clsss
                 | limit == 100 || clsss == (nextCluster pss clsss k) = clsss
-                | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss k)
-                where frstCluster k pss = createClusters (iniKCenValue k (sortPoints pss) [] 1) pss (initCluster k)
-                      nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
+                | otherwise = recalculateGroups k pss (limit+1) (nextCluster pss clsss k)
+                where nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
+
 
 --input: list of centroid of k groups, k, list of points and cluster
 --output: clusters (range 0 to k-1)
@@ -95,12 +98,12 @@ moreDistOf xs (ys:yss) ms maxEucliDist
         | otherwise = moreDistOf xs yss ms maxEucliDist
         where eucliDist = euclideanDist xs ys
 
---input: k, list of points, count = 1 and empty list of points
---output: count = k, list of k inicials centroids
-iniKCenValue :: (Eq a, Floating t, Num a, Ord t) => a -> [[t]] -> [[t]] -> a -> [[t]]
-iniKCenValue k pss kss count
-            | count == 1 = iniKCenValue k (tail pss) ((head pss):kss) (count+1)
-            | count == k+1 = kss
-            | otherwise = iniKCenValue k (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss]) (count+1)
+firstKCentroids :: (Eq a, Floating a1, Num a, Ord a1) => a -> [[a1]] -> [[a1]]
+firstKCentroids k pss = (restOfFirstKCentroids (k-1) (tail pss) [(head pss)])
+
+restOfFirstKCentroids :: (Eq a, Floating a1, Num a, Ord a1) => a -> [[a1]] -> [[a1]] -> [[a1]]
+restOfFirstKCentroids k pss kss
+            | k == 0 = kss
+            | otherwise = restOfFirstKCentroids (k-1) (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss])
             where pssLessPoint toRm pss = [ps | ps<-pss, ps /= toRm]
-proxCluster pss kss = moreDistOf (centroid kss) pss [] 0
+                  proxCluster pss kss = moreDistOf (centroid kss) pss [] 0

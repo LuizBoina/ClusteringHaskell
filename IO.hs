@@ -47,4 +47,4 @@ formatGroup clss pss = map replaceChar $ tail $ show [idx | cls<-clss, (idx,ps)<
 kmeansIO :: IO [[[Float]]]
 kmeansIO = do k <- getK
               pss <- getPoints
-              return $ kmeans k pss 1 (initCluster k)
+              return $ kmeans k pss
