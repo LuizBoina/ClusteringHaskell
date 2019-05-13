@@ -12,17 +12,16 @@ calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
                        where sseGroup [] _ = 0
                              sseGroup (cls:clss) centroidClss = (euclideanDist cls centroidClss)**2 + sseGroup clss centroidClss
                              
---primeira iteracao ja ocorre na chamada da funcao
-kmeans k pss = recalculateGroups k pss 2 (createClusters (firstKCentroids k (sortPoints pss)) pss) 
-
 
 --input: k, list of points, limit and cluster
 --output: clss
---recalculateGroups :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
-recalculateGroups k pss limit clsss
+kmeans :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
+kmeans k pss limit clsss
+                | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
                 | limit == 100 || clsss == (nextCluster pss clsss k) = clsss
-                | otherwise = recalculateGroups k pss (limit+1) (nextCluster pss clsss k)
-                where nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
+                | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss k)
+                where frstCluster k pss = createClusters (iniKCenValue k (sortPoints pss) [] 1) pss (initCluster k)
+                      nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
 
 --input: list of centroid of k groups, k, list of points and cluster
 --output: clusters (range 0 to k-1)
@@ -67,10 +66,11 @@ sortPoints xss = sortBy comparePoints xss
                         | sum xs < sum ys = LT
                         | sum xs > sum ys = GT
                         | otherwise = compareCoordinates xs ys
-                        where compareCoordinates (x:xs) (y:ys)
-                                | x < y = LT
-                                | x > y = GT
-                                | otherwise = compareCoordinates xs ys
+                        where compareCoordinates [] [] = EQ
+                              compareCoordinates (x:xs) (y:ys)
+                                        | x < y = LT
+                                        | x > y = GT
+                                        | otherwise = compareCoordinates xs ys
 
 transpose:: [[a]]->[[a]]
 transpose ([]:_) = []
@@ -88,18 +88,19 @@ centroid uss = map (\xs -> (sum xs) / fromIntegral(length xs)) (transpose uss)
 
 --input: Point, list of points, empty list and 0
 --output: more distant point in the list of points of Point
-moreDistOf :: (Floating a, Ord a) => [a] -> [[a]] -> [a]
-moreDistOf xs [ys] = ys
-moreDistOf xs (ys:yss)
-        | (euclideanDist xs ys) > euclideanDist xs (moreDistOf xs yss) = ys
-        | otherwise = (moreDistOf xs yss)
+moreDistOf :: (Ord t, Floating t) => [t] -> [[t]] -> [t] -> t -> [t]
+moreDistOf xs [] ms _ = ms
+moreDistOf xs (ys:yss) ms maxEucliDist
+        | eucliDist > maxEucliDist = moreDistOf xs yss ys eucliDist
+        | otherwise = moreDistOf xs yss ms maxEucliDist
+        where eucliDist = euclideanDist xs ys
 
-firstKCentroids :: (Eq a, Floating a1, Num a, Ord a1) => a -> [[a1]] -> [[a1]]
-firstKCentroids k pss = (restOfFirstKCentroids (k-1) (tail pss) [(head pss)])
-
-restOfFirstKCentroids :: (Eq a, Floating a1, Num a, Ord a1) => a -> [[a1]] -> [[a1]] -> [[a1]]
-restOfFirstKCentroids k pss kss
-            | k == 0 = kss
-            | otherwise = restOfFirstKCentroids (k-1) (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss])
+--input: k, list of points, count = 1 and empty list of points
+--output: count = k, list of k inicials centroids
+iniKCenValue :: (Eq a, Floating t, Num a, Ord t) => a -> [[t]] -> [[t]] -> a -> [[t]]
+iniKCenValue k pss kss count
+            | count == 1 = iniKCenValue k (tail pss) ((head pss):kss) (count+1)
+            | count == k+1 = kss
+            | otherwise = iniKCenValue k (pssLessPoint (proxCluster pss kss) pss) (kss++[proxCluster pss kss]) (count+1)
             where pssLessPoint toRm pss = [ps | ps<-pss, ps /= toRm]
-                  proxCluster pss kss = moreDistOf (centroid kss) pss
+proxCluster pss kss = moreDistOf (centroid kss) pss [] 0
