@@ -13,18 +13,16 @@ calcSSE (clss:clsss) = sseGroup clss (centroid clss) + calcSSE clsss
                              sseGroup (cls:clss) centroidClss = (euclideanDist cls centroidClss)**2 + sseGroup clss centroidClss
                              
 --primeira iteracao ja ocorre na chamada da funcao
---kmeans k pss = createClusters $ centroidCalculate k pss 2 (createClusters (firstKCentroids k (sortPoints pss)) initCluster k) 
+kmeans k pss = recalculateGroups k pss 2 (createClusters (firstKCentroids k (sortPoints pss)) pss) 
 
 
 --input: k, list of points, limit and cluster
 --output: clss
-kmeans :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
-kmeans k pss limit clsss
-                | limit == 1 = kmeans k pss (limit+1) (frstCluster k pss)
+--recalculateGroups :: (Floating a1, Ord a1, Enum a1, Enum t, Eq a2, Eq t, Num a2, Num t) => t -> [[a1]] -> a2 -> [[[a1]]] -> [[[a1]]]
+recalculateGroups k pss limit clsss
                 | limit == 100 || clsss == (nextCluster pss clsss k) = clsss
-                | otherwise = kmeans k pss (limit+1) (nextCluster pss clsss k)
-                where frstCluster k pss = createClusters (iniKCenValue k (sortPoints pss) [] 1) pss (initCluster k)
-                      nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
+                | otherwise = recalculateGroups k pss (limit+1) (nextCluster pss clsss k)
+                where nextCluster pss clsss k = createClusters (recalKCenValue clsss) pss (initCluster k)
 
 --input: list of centroid of k groups, k, list of points and cluster
 --output: clusters (range 0 to k-1)
