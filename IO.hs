@@ -19,32 +19,28 @@ getK :: IO Int
 getK = do k <- readFile "k.txt"
           return $ readInt k
 
-getPoints :: IO [[Float]]
+getPoints :: IO [(Integer, [Float])]
 getPoints = do fl <- readFile "entrada.txt"
-               return $ toListOfPoints fl
-               where toListOfPoints fl
+               return $ tuplefy $ toListOfPoints fl
+               where tuplefy pss = [(idx, ps) | (idx, ps) <- zip [1..] pss]
+                     toListOfPoints fl
                            | length fl == 0 = []
                            | otherwise = [toPoint fl] ++ (toListOfPoints (tail $ dropWhile (/='\n') fl))
                            where toPoint fl = map (\x -> readFloat x) (words $ takeWhile (/='\n') fl)
 
-writeSSE :: (PrintfArg t, Floating t) => [[[t]]] -> IO ()
-writeSSE clsss = writeFile "result.txt" (printf "%.4f" (calcSSE clsss))
+writeSSE clsss = writeFile "result.txt" (printf "%.4f" (calcSSE (map toPoints clsss)))
 
-writeClts :: Eq a => [[[a]]] -> [[a]] -> IO ()
-writeClts clsss pss = writeFile "saida.txt" (formatClts clsss pss)
+writeClts clsss = writeFile "saida.txt" (formatClts (map toIdx clsss))
 
-formatClts :: Eq a => [[[a]]] -> [[a]] -> [Char]
-formatClts [] _ = ""
-formatClts (clss:clsss) pss = formatGroup clss pss++(formatClts clsss pss)
+formatClts [] = ""
+formatClts (clss:clsss) = (formatGroup clss)++(formatClts clsss)
 
-formatGroup :: Eq a => [[a]] -> [[a]] -> [Char]
-formatGroup clss pss = map replaceChar $ tail $ show [idx | cls<-clss, (idx,ps)<-zip [1..] pss , cls == ps]
-                       where replaceChar c
-                                    | c == ',' = ' '
-                                    | c == ']' = '\n'
-                                    | otherwise = c
+formatGroup clss = map replaceChar $ tail $ show clss  
+                   where replaceChar c
+                            | c == ',' = ' '
+                            | c == ']' = '\n'
+                            | otherwise = c
 
-kmeansIO :: IO [[[Float]]]
 kmeansIO = do k <- getK
               pss <- getPoints
               return $ kmeans k pss
